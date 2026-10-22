@@ -1,1 +1,1 @@
-live link: https://nextjob-pi.vercel.app/login
+live link: https://nextjob-pi.vercel.app
