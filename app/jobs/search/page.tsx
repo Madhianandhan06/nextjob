@@ -7,6 +7,7 @@ import { Types } from "mongoose";
 import { revalidatePath } from "next/cache";
 import { Suspense } from "react";
 
+const LIMIT = 5;
 const jobTypes = ["Full-time", "Part-time", "Contract", "Internship"] as const;
 
 type JobType = (typeof jobTypes)[number];
@@ -31,6 +32,9 @@ async function JobsContent({
   }
 
   const params = await searchParams;
+
+  const page = Math.max(1, Number(params.page) || 1);
+
   const query = typeof params.q === "string" ? params.q.trim() : "";
   const jobType =
     typeof params.jobType === "string" && isJobType(params.jobType)
@@ -54,8 +58,11 @@ async function JobsContent({
     ...(jobType ? { jobType } : {}),
   })
     .sort({ createdAt: -1 })
-    .lean();
+    .lean()
+    .limit(page * LIMIT + 1);
 
+  const hasMore = jobs.length > page * LIMIT;
+  const visibleJobs = jobs.slice(0, page * LIMIT);
   async function handleDelete(formData: FormData) {
     "use server";
 
@@ -154,56 +161,75 @@ async function JobsContent({
       </form>
 
       <p className="px-4" aria-live="polite">
-        {jobs.length} {jobs.length === 1 ? "job" : "jobs"} found
+        {visibleJobs.length} {visibleJobs.length === 1 ? "job" : "jobs"} shown
       </p>
 
-      {jobs.length > 0 ? (
-        <ul className="p-4">
-          {jobs.map((job) => (
-            <li className="border-b border-gray-300 py-2" key={job._id.toString()}>
-              <h2>{job.title}</h2>
-              <p>{job.company}</p>
-              <p>{job.description}</p>
-              <p>{job.location}</p>
-              <p>{job.jobType}</p>
-              {job.salary && <p>Salary: ${job.salary}</p>}
-              {job.skills && job.skills.length > 0 && (
-                <p>Skills: {job.skills.join(", ")}</p>
-              )}
-              {(session.user.role === "admin" ||
-                session.user.id === job.ownerId) && (
-                <form action={handleDelete}>
-                  <input
-                    type="hidden"
-                    name="jobId"
-                    value={job._id.toString()}
-                  />
-                  <button
-                    className="rounded-lg bg-red-500 px-2 py-1 text-white hover:bg-red-600"
-                    type="submit"
-                  >
-                    Delete
-                  </button>
-                </form>
-              )}
-              {session.user.role !== "admin" && session.user.id !== job.ownerId && (
-                <form action={handleDelete}>
-                  <input
-                    type="hidden"
-                    name="jobId"
-                    value={job._id.toString()}
-                  />
-                  <button
-                    className="rounded-lg bg-green-500 px-2 py-1 text-white hover:bg-red-600"
-                    type="submit"
-                  >
-                    Apply
-                  </button>
-                </form>
-              )}
-            </li>
-          ))}
-        </ul>
+      {visibleJobs.length > 0 ? (
+        <>
+          <ul className="p-4">
+            {visibleJobs.map((job) => (
+              <li
+                className="border-b border-gray-300 py-2"
+                key={job._id.toString()}
+              >
+                <h2>{job.title}</h2>
+                <p>{job.company}</p>
+                <p>{job.description}</p>
+                <p>{job.location}</p>
+                <p>{job.jobType}</p>
+                {job.salary && <p>Salary: ${job.salary}</p>}
+                {job.skills && job.skills.length > 0 && (
+                  <p>Skills: {job.skills.join(", ")}</p>
+                )}
+                {(session.user.role === "admin" ||
+                  session.user.id === job.ownerId) && (
+                  <form action={handleDelete}>
+                    <input
+                      type="hidden"
+                      name="jobId"
+                      value={job._id.toString()}
+                    />
+                    <button
+                      className="rounded-lg bg-red-500 px-2 py-1 text-white hover:bg-red-600"
+                      type="submit"
+                    >
+                      Delete
+                    </button>
+                  </form>
+                )}
+                {session.user.role !== "admin" &&
+                  session.user.id !== job.ownerId && (
+                    <form action={handleDelete}>
+                      <input
+                        type="hidden"
+                        name="jobId"
+                        value={job._id.toString()}
+                      />
+                      <button
+                        className="rounded-lg bg-green-500 px-2 py-1 text-white hover:bg-red-600"
+                        type="submit"
+                      >
+                        Apply
+                      </button>
+                    </form>
+                  )}
+              </li>
+            ))}
+          </ul>
+          {hasMore && (
+            <form action="/jobs/search" method="get" className="p-4">
+              <input type="hidden" name="q" value={query} />
+              <input type="hidden" name="jobType" value={jobType} />
+              <input type="hidden" name="page" value={page + 1} />
+              <button
+                className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+                type="submit"
+              >
+                Load 5 more jobs
+              </button>
+            </form>
+          )}
+        </>
       ) : (
         <p className="p-4">
           {query || jobType
