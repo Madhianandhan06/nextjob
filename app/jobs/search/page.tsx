@@ -7,6 +7,8 @@ import { Types } from "mongoose";
 import { revalidatePath } from "next/cache";
 import { Suspense } from "react";
 
+import InfiniteJobs from "@/app/components/InfiniteJobs";
+
 const LIMIT = 5;
 const jobTypes = ["Full-time", "Part-time", "Contract", "Internship"] as const;
 
@@ -27,7 +29,7 @@ async function JobsContent({
 }) {
   const session = await auth();
 
-  if (!session?.user) {
+  if (!session?.user?.id) {
     redirect("/login");
   }
 
@@ -62,7 +64,18 @@ async function JobsContent({
     .limit(page * LIMIT + 1);
 
   const hasMore = jobs.length > page * LIMIT;
-  const visibleJobs = jobs.slice(0, page * LIMIT);
+  const visibleJobs = jobs.slice(0, page * LIMIT).map((job) => ({
+    _id: job._id.toString(),
+    title: job.title,
+    company: job.company,
+    description: job.description,
+    location: job.location,
+    jobType: job.jobType,
+    ...(job.salary !== undefined ? { salary: job.salary } : {}),
+    skills: Array.isArray(job.skills) ? job.skills : [],
+    ownerId: String(job.ownerId),
+  }));
+
   async function handleDelete(formData: FormData) {
     "use server";
 
@@ -160,77 +173,18 @@ async function JobsContent({
         )}
       </form>
 
-      <p className="px-4" aria-live="polite">
-        {visibleJobs.length} {visibleJobs.length === 1 ? "job" : "jobs"} shown
-      </p>
+      <InfiniteJobs
+        initialJobs={visibleJobs}
+        initialPage={page}
+        userId={session.user.id}
+        userRole={session.user.role}
+        handleDelete={handleDelete}
+        hasMore={hasMore}
+        query={query}
+        jobType={jobType}
+      />
 
-      {visibleJobs.length > 0 ? (
-        <>
-          <ul className="p-4">
-            {visibleJobs.map((job) => (
-              <li
-                className="border-b border-gray-300 py-2"
-                key={job._id.toString()}
-              >
-                <h2>{job.title}</h2>
-                <p>{job.company}</p>
-                <p>{job.description}</p>
-                <p>{job.location}</p>
-                <p>{job.jobType}</p>
-                {job.salary && <p>Salary: ${job.salary}</p>}
-                {job.skills && job.skills.length > 0 && (
-                  <p>Skills: {job.skills.join(", ")}</p>
-                )}
-                {(session.user.role === "admin" ||
-                  session.user.id === job.ownerId) && (
-                  <form action={handleDelete}>
-                    <input
-                      type="hidden"
-                      name="jobId"
-                      value={job._id.toString()}
-                    />
-                    <button
-                      className="rounded-lg bg-red-500 px-2 py-1 text-white hover:bg-red-600"
-                      type="submit"
-                    >
-                      Delete
-                    </button>
-                  </form>
-                )}
-                {session.user.role !== "admin" &&
-                  session.user.id !== job.ownerId && (
-                    <form action={handleDelete}>
-                      <input
-                        type="hidden"
-                        name="jobId"
-                        value={job._id.toString()}
-                      />
-                      <button
-                        className="rounded-lg bg-green-500 px-2 py-1 text-white hover:bg-red-600"
-                        type="submit"
-                      >
-                        Apply
-                      </button>
-                    </form>
-                  )}
-              </li>
-            ))}
-          </ul>
-          {hasMore && (
-            <form action="/jobs/search" method="get" className="p-4">
-              <input type="hidden" name="q" value={query} />
-              <input type="hidden" name="jobType" value={jobType} />
-              <input type="hidden" name="page" value={page + 1} />
-              <button
-                className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-                type="submit"
-              >
-                Load 5 more jobs
-              </button>
-            </form>
-          )}
-        </>
-      ) : (
+      {visibleJobs.length === 0 && (
         <p className="p-4">
           {query || jobType
             ? "No jobs match these filters. Try a different search."
