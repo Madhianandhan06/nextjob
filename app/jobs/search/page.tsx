@@ -3,12 +3,14 @@ import connectDB from "@/lib/db";
 import { redirect } from "next/navigation";
 import Job from "../../models/Job";
 import Link from "next/link";
+import Image from "next/image";
 import { Types } from "mongoose";
 import { revalidatePath } from "next/cache";
 import { Suspense } from "react";
 
 import InfiniteJobs from "@/app/components/InfiniteJobs";
 
+const searchText = "what's india's capital city?";
 const LIMIT = 5;
 const jobTypes = ["Full-time", "Part-time", "Contract", "Internship"] as const;
 
@@ -132,6 +134,21 @@ async function JobsContent({
         <span className="rounded-lg bg-blue-500 p-2 text-white hover:underline">
           <Link href="/dashboard">Back to Dashboard</Link>
         </span>
+      <Link
+        href={`https://www.google.com/search?q=${encodeURIComponent(searchText)}&udm=2&tbm=isch`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Search Google
+      </Link>
+
+          <Image
+            src="/nature.webp"
+            alt="Hero Banner"
+            width={1200}
+            height={600}
+            className="w-full h-auto my-4"
+          />
       </div>
 
       <form method="get" className="flex flex-wrap items-end gap-4 p-4">
