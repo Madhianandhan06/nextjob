@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button"
 
 type Job = {
   _id: string;
@@ -92,7 +93,9 @@ export default function InfiniteJobs({
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          void loadMoreJobs();
+          setTimeout(() => {
+            void loadMoreJobs();
+          }, 1500); // Add a 500ms delay before loading more jobs
         }
       },
       { rootMargin: "200px" }
@@ -107,6 +110,21 @@ export default function InfiniteJobs({
       <p className="px-4" aria-live="polite">
         {jobs.length} {jobs.length === 1 ? "job" : "jobs"} shown
       </p>
+
+          <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-slate-50">
+            <div className="text-center space-y-4">
+              <h1 className="text-4xl font-bold text-slate-900">
+                Hello Shadcn!
+              </h1>
+              <p className="text-slate-500">
+                Testing the shadcn button component in the InfiniteJobs component.
+              </p>
+              <p className="text-slate-500">
+                This is a simple example of how to use the shadcn button component in a Next.js application.
+              </p>
+              <Button size="lg">Click Me</Button>
+            </div>
+          </main>
 
       <ul className="p-4">
         {jobs.map((job) => (
@@ -188,12 +206,16 @@ export default function InfiniteJobs({
       )}
 
       {loading && (
-        <p className="p-4 text-center" aria-live="polite">
-          Loading more jobs...
-        </p>
+        <div className="fixed inset-0 grid place-items-center" role="status">
+          <div className="size-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+        </div>
       )}
-      {moreAvailable && (
+      {moreAvailable ? (
         <div ref={loadMoreRef} className="h-10" aria-hidden="true" />
+      ) : (
+        <p className="p-4 text-center" aria-live="polite">
+          No more jobs available
+        </p>
       )}
     </section>
   );
