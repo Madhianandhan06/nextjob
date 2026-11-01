@@ -9,10 +9,6 @@ const allowedImageTypes = new Set([
   "image/webp",
 ]);
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
@@ -36,6 +32,16 @@ export async function POST(req: Request) {
       );
     }
 
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      console.error("Image moderation is unavailable: OPENAI_API_KEY is not configured");
+      return NextResponse.json(
+        { error: "Image moderation is not configured" },
+        { status: 500 }
+      );
+    }
+
+    const openai = new OpenAI({ apiKey });
     const imageBytes = Buffer.from(await image.arrayBuffer());
     const imageDataUrl = `data:${image.type};base64,${imageBytes.toString("base64")}`;
     const response = await openai.moderations.create({
