@@ -29,6 +29,7 @@ export default async function DashboardPage() {
         }}
         >
           <span className="bg-blue-500 text-white p-2 rounded-lg hover:underline"><Link href="/jobs">Go to Jobs</Link></span>
+          <span className="bg-blue-500 text-white p-2 rounded-lg hover:underline"><Link href="/moderate-image">Go to Moderate Image</Link></span>
         <button type="submit">Sign out</button>
       </form>
     </main>
