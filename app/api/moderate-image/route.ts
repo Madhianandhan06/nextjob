@@ -59,7 +59,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No moderation result returned" }, { status: 502 });
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+      success: true,
+      approved: !result.flagged,
+      message: result.flagged
+        ? "Your profile picture contains restricted content."
+        : "Profile picture approved!",
+    });
   } catch (error) {
     console.error("Image moderation failed:", error);
     return NextResponse.json(
