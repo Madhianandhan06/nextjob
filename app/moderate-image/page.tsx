@@ -5,6 +5,22 @@ import Image from "next/image";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
+type ModerationResult = {
+  approved: boolean;
+  message: string;
+};
+
+function isModerationResult(value: unknown): value is ModerationResult {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "approved" in value &&
+    typeof value.approved === "boolean" &&
+    "message" in value &&
+    typeof value.message === "string"
+  );
+}
+
 function getErrorMessage(value: unknown) {
   if (
     typeof value === "object" &&
@@ -21,7 +37,7 @@ function getErrorMessage(value: unknown) {
 export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<ModerationResult | null>(null);
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -56,14 +72,19 @@ export default function Page() {
         method: "POST",
         body: formData,
       });
-      const data =  await response.json();
+      const data: unknown = await response.json();
 
       if (!response.ok) {
         setError(getErrorMessage(data));
         return;
       }
 
-      setResult(JSON.stringify(data.message, null, 2));
+      if (!isModerationResult(data)) {
+        setError("The moderation service returned an unexpected response.");
+        return;
+      }
+
+      setResult(data);
     } catch {
       setError("Could not reach the moderation service. Please try again.");
     } finally {
@@ -81,21 +102,6 @@ export default function Page() {
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div className="space-y-2">
-                {error && (
-                  <p className="mt-4 text-sm text-destructive" role="alert">
-                    {error}
-                  </p>
-                )}
-                {result && (
-                  <section className="mt-6 bg-slate-800 p-4 rounded-md" aria-labelledby="result-heading">
-                    <h2 className="mb-2 text-lg font-medium" id="result-heading">
-                      Moderation result
-                    </h2>
-                    <pre className="overflow-auto bg-slate-900 rounded-md p-4 text-sm">
-                      {result.replace(/['"]/g, '')}
-                    </pre>
-                  </section>
-                )}
           <label className="block text-sm font-medium" htmlFor="image">
             Image
           </label>
@@ -134,6 +140,31 @@ export default function Page() {
           {isLoading ? "Checking image..." : "Upload and moderate"}
         </button>
       </form>
+
+      {error && (
+        <p className="mt-4 text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      )}
+      {result && (
+        <section
+          className="mt-6 rounded-md bg-slate-800 p-4"
+          aria-labelledby="result-heading"
+        >
+          <h2 className="mb-2 text-lg font-medium" id="result-heading">
+            Moderation result
+          </h2>
+          <p
+            className={`mb-2 font-semibold ${
+              result.approved ? "text-emerald-400" : "text-destructive"
+            }`}
+            role="status"
+          >
+            {result.approved ? "Approved" : "Flagged"}
+          </p>
+          <p>{result.message}</p>
+        </section>
+      )}
     </main>
   );
 }
