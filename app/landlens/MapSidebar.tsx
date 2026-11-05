@@ -3,6 +3,8 @@
 import { Search, MapPin, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 
+import { ButtonGroupSplit } from "@/components/ui/button-group";
+
 type PriceSliderProps = {
   maxPrice: number;
   onPriceChange: (price: number) => void;
@@ -52,6 +54,8 @@ export default function MapSidebar({
         <p className="text-xs text-gray-400 mt-1">
           Transparent land intelligence
         </p>
+
+        <ButtonGroupSplit className={"bg-orange-600 my-2"}/>
       </div>
 
       {/* Search */}
