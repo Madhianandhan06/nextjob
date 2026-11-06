@@ -4,10 +4,18 @@ import { Search, MapPin, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 
 import { ButtonGroupSplit } from "@/components/ui/button-group";
+import { Button } from "@/components/ui/button";
 
 type PriceSliderProps = {
   maxPrice: number;
   onPriceChange: (price: number) => void;
+};
+
+type MapSidebarProps = PriceSliderProps & {
+  drawingActive: boolean;
+  onStartDrawing: () => void;
+  onFinishDrawing: () => void;
+  onCancelDrawing: () => void;
 };
 
 export function PriceSlider({ maxPrice, onPriceChange }: PriceSliderProps) {
@@ -38,11 +46,14 @@ export function PriceSlider({ maxPrice, onPriceChange }: PriceSliderProps) {
   );
 }
 
-type MapSidebarProps = PriceSliderProps;
-
 export default function MapSidebar({
   maxPrice,
   onPriceChange,
+  drawingActive,
+  onStartDrawing,
+  onFinishDrawing,
+  onCancelDrawing,
+
 }: MapSidebarProps) {
   return (
     <aside className="w-80 h-full bg-[#111827] text-white border-r border-white/10 p-5 flex flex-col gap-6">
@@ -55,7 +66,35 @@ export default function MapSidebar({
           Transparent land intelligence
         </p>
 
-        <ButtonGroupSplit className={"bg-orange-600 my-2"}/>
+        {/* <ButtonGroupSplit className={"bg-orange-600 my-2"}/> */}
+
+        <div className="space-y-2 my-4">
+          {!drawingActive ? (
+            <Button
+              className="w-full bg-emerald-600 hover:bg-emerald-700"
+              onClick={onStartDrawing}
+            >
+              Add Property
+            </Button>
+          ) : (
+            <>
+              <Button
+                className="w-full bg-emerald-600 hover:bg-emerald-700"
+                onClick={onFinishDrawing}
+              >
+                Finish Boundary
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={onCancelDrawing}
+              >
+                Cancel Drawing
+              </Button>
+            </>
+        )}
+</div>
       </div>
 
       {/* Search */}
