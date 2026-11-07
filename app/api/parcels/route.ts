@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const { name, geometry, area } = body;
+    const { name, geometry, area, pricePerSquareFoot } = body;
 
     if (!name || !geometry || !area) {
       return NextResponse.json(
@@ -18,9 +18,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (
+      typeof pricePerSquareFoot !== "number" ||
+      !Number.isFinite(pricePerSquareFoot) ||
+      pricePerSquareFoot < 0.01
+    ) {
+      return NextResponse.json(
+        { message: "Price per square foot must be at least 0.01" },
+        { status: 400 }
+      );
+    }
+
     const parcel = await Parcel.create({
       name,
       ownerId: "temporary-user",
+      pricePerSquareFoot,
       geometry,
       area,
     });
@@ -48,7 +60,7 @@ export async function GET() {
         await connectDB();
 
         const parcels = await Parcel.find({ ownerId: "temporary-user" })
-            .select("_id name geometry area")
+            .select("_id name geometry area pricePerSquareFoot")
             .lean();
 
         return NextResponse.json({ parcels });

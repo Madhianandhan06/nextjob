@@ -1,11 +1,12 @@
 
 "use client";
 
-import { APIProvider, Map, Polygon } from "@vis.gl/react-google-maps";
+import { APIProvider, AdvancedMarker, Map, Polygon } from "@vis.gl/react-google-maps";
 
 import PropertyMarkers from "./PropertyMarkers";
 import MapDrawingController from "./MapDrawingController";
 import type { SavedParcel } from "@/types/landlens";
+import { Fragment } from "react";
 
 type MapWrapperProps = {
   className?: string;
@@ -37,19 +38,41 @@ export default function MapWrapper({
         >
           <PropertyMarkers maxPrice={maxPrice} />
 
-          {parcels.map((parcel) => (
+      {parcels.map((parcel) => {
+        const ring = parcel.geometry.coordinates[0] ?? [];
+        const points = ring.slice(0, -1); // omit the repeated closing point
+
+        const markerPosition =
+          points.length > 0
+            ? {
+                lat: points.reduce((sum, [, lat]) => sum + lat, 0) / points.length,
+                lng: points.reduce((sum, [lng]) => sum + lng, 0) / points.length,
+              }
+            : null;
+
+        return (
+          <Fragment key={parcel._id}>
             <Polygon
-              key={parcel._id}
-              paths={parcel.geometry.coordinates.map((ring) =>
-                ring.map(([lng, lat]) => ({ lat, lng }))
+              paths={parcel.geometry.coordinates.map((polygonRing) =>
+                polygonRing.map(([lng, lat]) => ({ lat, lng }))
               )}
               fillColor="red"
               fillOpacity={0.25}
               strokeColor="red"
               strokeWeight={2}
-              clickable={true}
+              clickable
             />
-          ))}
+
+            {parcel.pricePerSquareFoot != null && markerPosition && (
+              <AdvancedMarker position={markerPosition}>
+                <div className="rounded-lg bg-emerald-500 px-3 py-2 text-xs font-bold text-white shadow-lg">
+                  ₹{parcel.pricePerSquareFoot}/sqft
+                </div>
+              </AdvancedMarker>
+            )}
+          </Fragment>
+        );
+      })}
 
           <MapDrawingController
             active={drawingActive}

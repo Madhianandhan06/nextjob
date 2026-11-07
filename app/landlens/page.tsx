@@ -1,9 +1,10 @@
 
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import MapSidebar from "../landlens/MapSidebar";
 import MapWrapper from "../landlens/MapWrapper";
+import PropertyMarkers from "../landlens/PropertyMarkers";
 
 import type { LandFeature, SavedParcel } from "@/types/landlens";
 
@@ -21,6 +22,15 @@ export default function LandLensPage() {
 
 
   const [parcels, setParcels] = useState<SavedParcel[]>([]);
+
+
+  console.log("Current parcels:", parcels);
+  const [landprice, setLandprice] = useState("");
+
+  const isLandPriceValid =
+    landprice.trim() !== "" &&
+    Number.isFinite(Number(landprice)) &&
+    Number(landprice) >= 0.01;
 
   const loadParcels = useCallback(async () => {
     const response = await fetch("/api/parcels");
@@ -70,12 +80,15 @@ export default function LandLensPage() {
   });
 
   async function handleSaveParcel() {
+
     const feature = boundary[0];
 
     if (!feature) {
       alert("Draw a boundary first");
       return;
     }
+
+    if (!isLandPriceValid) return;
 
     try {
       const response = await fetch("/api/parcels", {
@@ -85,6 +98,7 @@ export default function LandLensPage() {
         },
         body: JSON.stringify({
           name: "My Land",
+          pricePerSquareFoot: Number(landprice),
           geometry: feature.geometry,
           area: {
             squareMeters: 223,
@@ -118,6 +132,7 @@ export default function LandLensPage() {
         drawingActive={drawingActive}
         onStartDrawing={() => {
           setParcelSaved(false);
+          setLandprice("");
           setDrawingActive(true);
         }}
         onFinishDrawing={handleFinishDrawing}
@@ -135,12 +150,24 @@ export default function LandLensPage() {
         />
 
         {hasFourSidedBoundary && !parcelSaved && (
-          <button
-            className="absolute top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 z-20 rounded-lg bg-red-600 px-2.5 py-0.5 text-white shadow-lg"
-            onClick={handleSaveParcel}
-          >
-            Save
-          </button>
+          <div className="absolute left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg bg-red-600 p-2 shadow-lg">
+            <input
+              value={landprice}
+              onChange={(e) => setLandprice(e.target.value)}
+              type="number"
+              min="0.01"
+              step="any"
+              className="w-40 rounded-lg border-none bg-white p-2 focus:outline-none"
+              placeholder="Price per square feet"
+            />
+            <button
+              className="rounded-lg px-2.5 py-0.5 text-white disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!isLandPriceValid}
+              onClick={handleSaveParcel}
+            >
+              Save
+            </button>
+          </div>
         )}
       </section>
 

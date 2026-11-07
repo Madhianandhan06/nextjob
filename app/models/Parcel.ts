@@ -15,6 +15,16 @@ const parcelSchema = new Schema(
       trim: true,
     },
 
+    pricePerSquareFoot: {
+      type: Number,
+      required: true,
+      min: 0.01,
+      validate: {
+        validator: (value: number) => Number.isFinite(value),
+        message: "Price per square foot must be a finite number",
+      },
+    },
+
     geometry: {
       type: {
         type: String,
