@@ -53,7 +53,7 @@ export default function MapWrapper({
 
   return (
     <APIProvider apiKey={apiKey}>
-      <div className={`${className} relative`}>
+      <div >
         <Map
           defaultCenter={{ lat: 11.6643, lng: 78.1460 }}
           defaultZoom={13}
