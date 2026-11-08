@@ -49,6 +49,11 @@ const parcelSchema = new Schema(
         required: true,
       },
     },
+    landtype: {
+      type: String,
+      enum: ["residential", "commercial", "agricultural", "industrial"],
+      required: true,
+    },
   },
   {
     timestamps: true,
