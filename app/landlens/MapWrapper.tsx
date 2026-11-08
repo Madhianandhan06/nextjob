@@ -91,7 +91,6 @@ export default function MapWrapper({
               onClick={() => {
                 setSelectedParcel(parcel);
               }}
-              className="cursor-pointer"
             />
 
             {parcel.pricePerSquareFoot != null && markerPosition && (
