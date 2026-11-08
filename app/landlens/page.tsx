@@ -4,8 +4,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import MapSidebar from "../landlens/MapSidebar";
 import MapWrapper from "../landlens/MapWrapper";
-import PropertyMarkers from "../landlens/PropertyMarkers";
-
 import type { LandFeature, SavedParcel } from "@/types/landlens";
 
 export default function LandLensPage() {
@@ -23,6 +21,8 @@ export default function LandLensPage() {
 
   const [parcels, setParcels] = useState<SavedParcel[]>([]);
 
+
+  const [landtype, setLandtype] = useState("residential");
 
   console.log("Current parcels:", parcels);
   const [landprice, setLandprice] = useState("");
@@ -104,6 +104,7 @@ export default function LandLensPage() {
             squareMeters: 223,
             squareFeet: 2403,
           },
+          landtype: landtype,
         }),
       });
 
@@ -150,16 +151,31 @@ export default function LandLensPage() {
         />
 
         {hasFourSidedBoundary && !parcelSaved && (
-          <div className="absolute left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg bg-red-600 p-2 shadow-lg">
+          <div className="absolute left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg bg-orange-600 text-white p-2 shadow-lg">
             <input
               value={landprice}
               onChange={(e) => setLandprice(e.target.value)}
               type="number"
               min="0.01"
               step="any"
-              className="w-40 rounded-lg border-none bg-white p-2 focus:outline-none"
+              className="w-40 rounded-lg border-none text-black bg-white p-2 focus:outline-none"
               placeholder="Price per square feet"
             />
+            <div>
+              <div className="flex flex-col gap-2">
+                <select
+                  value={landtype}
+                  onChange={(e) => setLandtype(e.target.value)}
+                  className="rounded-lg border-none text-black bg-white p-2 focus:outline-none my-2"
+                >
+                  <option value="residential" defaultChecked>
+                    Residential
+                  </option>
+                  <option value="commercial">Commercial</option>
+                  <option value="agricultural">Agricultural</option>
+                </select>
+              </div>
+            </div>
             <button
               className="rounded-lg px-2.5 py-0.5 text-white disabled:cursor-not-allowed disabled:opacity-50"
               disabled={!isLandPriceValid}
