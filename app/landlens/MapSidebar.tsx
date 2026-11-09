@@ -87,7 +87,7 @@ export default function MapSidebar({
 
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full text-blue-600"
                 onClick={onCancelDrawing}
               >
                 Cancel Drawing
