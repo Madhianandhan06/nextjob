@@ -53,8 +53,9 @@ export default function MapWrapper({
 
   return (
     <APIProvider apiKey={apiKey}>
-      <div >
+      <div className={className}>
         <Map
+          style={{ width: "100%", height: "100%" }}
           defaultCenter={{ lat: 11.6643, lng: 78.1460 }}
           defaultZoom={13}
           gestureHandling="greedy"

@@ -56,7 +56,7 @@ export default function MapSidebar({
 
 }: MapSidebarProps) {
   return (
-    <aside className="w-80 h-full bg-[#111827] text-white border-r border-white/10 p-5 flex flex-col gap-6">
+    <aside className="w-80 max-md:w-40 shrink-0 h-full bg-[#111827] text-white border-r border-white/10 p-5 max-md:p-3 flex flex-col gap-6">
       {/* Branding */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight">
