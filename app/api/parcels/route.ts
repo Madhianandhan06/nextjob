@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const { name, geometry, area, pricePerSquareFoot } = body;
+    const { name, geometry, area, pricePerSquareFoot, landtype } = body;
 
     if (!name || !geometry || !area) {
       return NextResponse.json(
@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
       pricePerSquareFoot,
       geometry,
       area,
+      ...(landtype ? {landtype} : {})
     });
 
     return NextResponse.json(
