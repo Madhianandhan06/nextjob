@@ -125,7 +125,7 @@ export default function LandLensPage() {
   console.log(hasFourSidedBoundary)
 
   return (
-    <main className="h-screen w-full flex overflow-hidden bg-[#0b1120]">
+    <main className="flex h-dvh w-full overflow-hidden bg-[#0b1120]">
 
       <MapSidebar
         maxPrice={maxPrice}
@@ -140,9 +140,9 @@ export default function LandLensPage() {
         onCancelDrawing={handleCancelDrawing}
       />
 
-      <section className="relative flex-1 h-full min-w-0">
+      <section className="relative min-h-0 min-w-0 flex-1">
         <MapWrapper
-          className="h-full w-full relative"
+          className="absolute inset-0"
           maxPrice={maxPrice}
           drawingActive={drawingActive}
           onBoundaryChange={handleBoundaryChange}
