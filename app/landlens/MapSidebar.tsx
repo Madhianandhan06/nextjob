@@ -143,8 +143,6 @@ export default function MapSidebar({
           <span>Explore land opportunities</span>
         </div>
       </div>
-
-
     </aside>
   );
 }
