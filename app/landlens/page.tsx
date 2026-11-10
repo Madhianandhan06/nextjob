@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import MapSidebar from "../landlens/MapSidebar";
 import MapWrapper from "../landlens/MapWrapper";
 import type { LandFeature, SavedParcel } from "@/types/landlens";
+import { toast } from "sonner";
+import { area } from "@turf/area";
 
 export default function LandLensPage() {
   const [maxPrice, setMaxPrice] = useState(5000);
@@ -20,6 +22,7 @@ export default function LandLensPage() {
 
 
   const [parcels, setParcels] = useState<SavedParcel[]>([]);
+  const [clearDrawingRequest, setClearDrawingRequest] = useState(0);
 
 
   const [landtype, setLandtype] = useState("residential");
@@ -79,6 +82,14 @@ export default function LandLensPage() {
     return distinctVertices.size >= 3
   });
 
+  const selectedFeature = boundary[0];
+
+  const areaInSquareMeters = selectedFeature
+    ? area(selectedFeature)
+    : 0;
+
+  const areaInSquareFeet = areaInSquareMeters * 10.7639104167;
+
   async function handleSaveParcel() {
 
     const feature = boundary[0];
@@ -101,8 +112,8 @@ export default function LandLensPage() {
           pricePerSquareFoot: Number(landprice),
           geometry: feature.geometry,
           area: {
-            squareMeters: 223,
-            squareFeet: 2403,
+            squareMeters: Number(areaInSquareMeters.toFixed(2)),
+            squareFeet: Number(areaInSquareFeet.toFixed(2)),
           },
           landtype: landtype,
         }),
@@ -110,12 +121,18 @@ export default function LandLensPage() {
 
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.message ?? "Could not save parcel");
+        toast.error(result.message ?? "Could not save parcel");
+        return;
       }
-
-      setParcelSaved(true);
+      toast.success(result.message ?? "Parcel saved");
+      setDrawingActive(false);
+      setClearDrawingRequest((request) => request + 1);
       await loadParcels();
+      setParcelSaved(true);
     } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Could not save parcel"
+        );
       console.error("Could not save parcel:", error);
     }
   }
@@ -146,12 +163,12 @@ export default function LandLensPage() {
           maxPrice={maxPrice}
           drawingActive={drawingActive}
           onBoundaryChange={handleBoundaryChange}
-
           parcels={parcels}
+          clearDrawingRequest={clearDrawingRequest}
         />
 
         {hasFourSidedBoundary && !parcelSaved && (
-          <div className="absolute left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg bg-orange-600 text-white p-2 shadow-lg">
+          <div className="absolute left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 space-y-2 flex-col rounded-lg bg-orange-600 text-white p-2 shadow-lg">
             <input
               value={landprice}
               onChange={(e) => setLandprice(e.target.value)}
@@ -161,12 +178,19 @@ export default function LandLensPage() {
               className="w-40 rounded-lg border-none text-black bg-white p-2 focus:outline-none"
               placeholder="Price per square feet"
             />
+            <div className="rounded-lg bg-white p-2 text-black text-sm">
+              <p>
+                Area: {areaInSquareFeet.toLocaleString("en-IN", {
+                  maximumFractionDigits: 2,
+                })} sqft
+              </p>
+            </div>
             <div>
               <div className="flex flex-col gap-2">
                 <select
                   value={landtype}
                   onChange={(e) => setLandtype(e.target.value)}
-                  className="rounded-lg border-none text-black bg-white p-2 focus:outline-none my-2"
+                  className="rounded-lg border-none text-black bg-white p-2 focus:outline-none"
                 >
                   <option value="residential" defaultChecked>
                     Residential

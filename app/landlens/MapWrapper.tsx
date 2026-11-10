@@ -12,6 +12,7 @@ type MapWrapperProps = {
   drawingActive: boolean;
   onBoundaryChange: (features: unknown[]) => void;
   parcels: SavedParcel[];
+  clearDrawingRequest: number;
 };
 
 export default function MapWrapper({
@@ -20,6 +21,7 @@ export default function MapWrapper({
   drawingActive,
   onBoundaryChange,
   parcels,
+  clearDrawingRequest,
 }: MapWrapperProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
   const mapId = process.env.NEXT_PUBLIC_GOOGLE_MAP_ID!;
@@ -51,6 +53,8 @@ export default function MapWrapper({
     };
   }, [selectedParcel]);
 
+  console.log(selectedParcel)
+  
   return (
     <APIProvider apiKey={apiKey}>
       <div className={className}>
@@ -80,6 +84,7 @@ export default function MapWrapper({
 
         return (
           <Fragment key={parcel._id}>
+            
             <Polygon
               paths={parcel.geometry.coordinates.map((polygonRing) =>
                 polygonRing.map(([lng, lat]) => ({ lat, lng }))
@@ -91,9 +96,9 @@ export default function MapWrapper({
               clickable
               onClick={() => {
                 setSelectedParcel(parcel);
+                console.log("Parcel clicked:", parcel);
               }}
             />
-
             {parcel.pricePerSquareFoot != null && markerPosition && (
               <AdvancedMarker position={markerPosition}>
                 <div className="rounded-lg bg-emerald-500 px-3 py-2 text-xs font-bold text-white shadow-lg">
@@ -109,6 +114,7 @@ export default function MapWrapper({
           <MapDrawingController
             active={drawingActive}
             onBoundaryChange={onBoundaryChange}
+            clearDrawingRequest={clearDrawingRequest}
           />
         </Map>
 
@@ -131,13 +137,20 @@ export default function MapWrapper({
               </button>
               <h3 className="mb-2 text-lg font-bold">Land Details</h3>
               <p>{selectedParcel.name}</p>
-              <p>
-                Price sqft:{" "}
-                {selectedParcel.pricePerSquareFoot != null
-                  ? `₹${selectedParcel.pricePerSquareFoot}`
-                  : "Not available"}
-              </p>
+              <span>
+                Price:{" "} {selectedParcel.pricePerSquareFoot != null
+                  ? `₹${(
+                      (selectedParcel.pricePerSquareFoot * selectedParcel.area.squareFeet) /
+                      10_000_000
+                    ).toFixed(2)} Cr`
+                  : "Not available"
+                }
+              </span>
               <p>Area: {selectedParcel.area.squareFeet} sqft</p>
+
+              <span className="text-xs text-red-500">
+                Note: Land Prices are subject to change, This is approximate estimations
+              </span>
             </div>
           </div>
         )}

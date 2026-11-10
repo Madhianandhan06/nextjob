@@ -15,16 +15,19 @@ import { TerraDrawGoogleMapsAdapter } from "terra-draw-google-maps-adapter";
 type Props = {
   active: boolean;
   onBoundaryChange: (features: unknown[]) => void;
+  clearDrawingRequest: number;
 };
 
 
 export default function MapDrawingController({
   active,
   onBoundaryChange,
+  clearDrawingRequest,
 }: Props) {
   const map = useMap();
   const drawRef = useRef<TerraDraw | null>(null);
   const activeRef = useRef(active);
+  const clearDrawingRequestRef = useRef(clearDrawingRequest);
 
   // Initialize Terra Draw once the Google Map is available
   useEffect(() => {
@@ -102,6 +105,14 @@ export default function MapDrawingController({
 
     draw.setMode(active ? "polygon" : "select");
   }, [active]);
+
+  useEffect(() => {
+    if (clearDrawingRequestRef.current === clearDrawingRequest) return;
+
+    clearDrawingRequestRef.current = clearDrawingRequest;
+    drawRef.current?.clear();
+    onBoundaryChange([]);
+  }, [clearDrawingRequest, onBoundaryChange]);
 
   return null;
 }
