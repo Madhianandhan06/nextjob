@@ -22,14 +22,19 @@ export default function LandLensPage() {
 
 
   const [parcels, setParcels] = useState<SavedParcel[]>([]);
+
+
   const [clearDrawingRequest, setClearDrawingRequest] = useState(0);
 
 
   const [landtype, setLandtype] = useState("residential");
 
   console.log("Current parcels:", parcels);
+
+
   const [landprice, setLandprice] = useState("");
 
+  
   const isLandPriceValid =
     landprice.trim() !== "" &&
     Number.isFinite(Number(landprice)) &&
@@ -142,7 +147,7 @@ export default function LandLensPage() {
   console.log(hasFourSidedBoundary)
 
   return (
-    <main className="flex h-dvh w-full overflow-hidden bg-[#0b1120]">
+    <main className="relative flex h-dvh w-full flex-col overflow-hidden bg-[#0b1120] md:flex-row">
 
       <MapSidebar
         maxPrice={maxPrice}

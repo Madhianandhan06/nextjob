@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { ButtonGroupSplit } from "@/components/ui/button-group";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 type PriceSliderProps = {
   maxPrice: number;
@@ -55,13 +56,36 @@ export default function MapSidebar({
   onCancelDrawing,
 
 }: MapSidebarProps) {
+  const [open, setOpen] = useState(true);
+
   return (
-    <aside className="w-80 max-md:w-40 shrink-0 h-full bg-[#111827] text-white border-r border-white/10 p-5 max-md:p-3 flex flex-col gap-6">
+    <>
+      <button
+        type="button"
+        aria-controls="landlens-sidebar"
+        aria-expanded={open}
+        className="fixed right-3 top-3 z-50 rounded-md bg-[#111827] px-3 py-2 text-sm text-white shadow"
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        {open ? "Hide filters" : "Show filters"}
+      </button>
+      <aside
+        id="landlens-sidebar"
+        aria-hidden={!open}
+        inert={!open}
+        className={`absolute left-0 top-0 z-40 flex h-full shrink-0 flex-col overflow-x-hidden overflow-y-auto overscroll-contain bg-[#111827] text-white transition-[width,padding,border-color] duration-300 ease-in-out motion-reduce:transition-none md:relative ${
+          open
+            ? "w-[70%] gap-4 border-b border-white/10 p-4 md:w-80 md:gap-6 md:border-b-0 md:border-r md:p-5"
+            : "w-0 gap-0 border-0 p-0"
+        }`}
+      >
       {/* Branding */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Land<span className="text-emerald-400">Lens</span>
-        </h1>
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="text-xl font-bold tracking-tight md:text-2xl">
+            Land<span className="text-emerald-400">Lens</span>
+          </h1>
+        </div>
         <p className="text-xs text-gray-400 mt-1">
           Transparent land intelligence
         </p>
@@ -93,8 +117,8 @@ export default function MapSidebar({
                 Cancel Drawing
               </Button>
             </>
-        )}
-</div>
+          )}
+        </div>
       </div>
 
       {/* Search */}
@@ -143,6 +167,7 @@ export default function MapSidebar({
           <span>Explore land opportunities</span>
         </div>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }
