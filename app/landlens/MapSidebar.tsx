@@ -56,7 +56,7 @@ export default function MapSidebar({
   onCancelDrawing,
 
 }: MapSidebarProps) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   return (
     <>
