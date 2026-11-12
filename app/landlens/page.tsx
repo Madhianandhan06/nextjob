@@ -34,7 +34,12 @@ export default function LandLensPage() {
 
   const [landprice, setLandprice] = useState("");
 
-  
+  const [images, setImages] = useState<File[]>([]);
+
+  const hasEnoughImages = images.length >= 3;
+
+  const [loading, setLoading] = useState(false);
+
   const isLandPriceValid =
     landprice.trim() !== "" &&
     Number.isFinite(Number(landprice)) &&
@@ -96,32 +101,42 @@ export default function LandLensPage() {
   const areaInSquareFeet = areaInSquareMeters * 10.7639104167;
 
   async function handleSaveParcel() {
-
+    setLoading(true);
     const feature = boundary[0];
 
     if (!feature) {
       alert("Draw a boundary first");
+      setLoading(false);
       return;
     }
 
-    if (!isLandPriceValid) return;
+    if (!isLandPriceValid || !hasEnoughImages) return;
 
     try {
+      const formData = new FormData();
+      formData.append("name", "My Land");
+      formData.append("pricePerSquareFoot", landprice);
+      formData.append("landtype", landtype);
+
+      // Stringify nested objects before appending to FormData
+      formData.append("geometry", JSON.stringify(feature.geometry));
+      formData.append(
+        "area",
+        JSON.stringify({
+          squareMeters: Number(areaInSquareMeters.toFixed(2)),
+          squareFeet: Number(areaInSquareFeet.toFixed(2)),
+        })
+      );
+
+      // Append each image file under the same key name ("images")
+      images.forEach((file) => {
+        formData.append("images", file);
+      });
+
       const response = await fetch("/api/parcels", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: "My Land",
-          pricePerSquareFoot: Number(landprice),
-          geometry: feature.geometry,
-          area: {
-            squareMeters: Number(areaInSquareMeters.toFixed(2)),
-            squareFeet: Number(areaInSquareFeet.toFixed(2)),
-          },
-          landtype: landtype,
-        }),
+        // Note: Do NOT set 'Content-Type': 'application/json' here
+        body: formData,
       });
 
       const result = await response.json();
@@ -129,20 +144,22 @@ export default function LandLensPage() {
         toast.error(result.message ?? "Could not save parcel");
         return;
       }
+
       toast.success(result.message ?? "Parcel saved");
       setDrawingActive(false);
+      setImages([]); // Reset selected images
       setClearDrawingRequest((request) => request + 1);
       await loadParcels();
       setParcelSaved(true);
     } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : "Could not save parcel"
-        );
+      toast.error(
+        error instanceof Error ? error.message : "Could not save parcel"
+      );
       console.error("Could not save parcel:", error);
+    }finally {
+      setLoading(false);
     }
   }
-
-
 
   console.log(hasFourSidedBoundary)
 
@@ -173,16 +190,15 @@ export default function LandLensPage() {
         />
 
         {hasFourSidedBoundary && !parcelSaved && (
-          <div className="absolute left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 space-y-2 flex-col rounded-lg bg-orange-600 text-white p-2 shadow-lg">
-            <input
-              value={landprice}
-              onChange={(e) => setLandprice(e.target.value)}
-              type="number"
-              min="0.01"
-              step="any"
-              className="w-40 rounded-lg border-none text-black bg-white p-2 focus:outline-none"
-              placeholder="Price per square feet"
-            />
+          <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 flex-col space-y-2 rounded-lg bg-orange-600 p-2 text-white shadow-lg">            <input
+            value={landprice}
+            onChange={(e) => setLandprice(e.target.value)}
+            type="number"
+            min="0.01"
+            step="any"
+            className="w-full rounded-lg border-none text-black bg-white p-2 focus:outline-none"
+            placeholder="Price per square feet"
+          />
             <div className="rounded-lg bg-white p-2 text-black text-sm">
               <p>
                 Area: {areaInSquareFeet.toLocaleString("en-IN", {
@@ -203,11 +219,28 @@ export default function LandLensPage() {
                   <option value="commercial">Commercial</option>
                   <option value="agricultural">Agricultural</option>
                 </select>
+                 {!hasEnoughImages &&(
+                  <p className="text-xs font-bold text-center text-white">
+                    Minimum Upload 3 Images
+                  </p>
+                )}
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files) {
+                      const selectedFiles = Array.from(e.target.files);
+                      setImages(selectedFiles);
+                    }
+                  }}
+                  className="rounded-lg border-none text-black bg-white p-2 focus:outline-none"
+                />
               </div>
             </div>
             <button
               className="rounded-lg px-2.5 py-0.5 text-white disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={!isLandPriceValid}
+              disabled={!isLandPriceValid || !hasEnoughImages || loading}
               onClick={handleSaveParcel}
             >
               Save

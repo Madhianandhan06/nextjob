@@ -9,6 +9,14 @@ body {
   margin: 0;
 }
 
+#landlens-sidebar {
+  scrollbar-width: none;
+}
+
+#landlens-sidebar::-webkit-scrollbar {
+  display: none;
+}
+
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: var(--font-sans);
@@ -130,5 +138,16 @@ body {
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* app/globals.css */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;     /* Firefox */
   }
 }

@@ -53,6 +53,15 @@ const parcelSchema = new Schema(
       type: String,
       enum: ["residential", "commercial", "agricultural", "industrial"],
     },
+    // Add this field inside your ParcelSchema definition
+    images: {
+      type: [String],
+      required: true,
+      validate: {
+        validator: (v: string[]) => v.length >= 3,
+        message: "At least 3 images are required.",
+      },
+    },
   },
   {
     timestamps: true,
