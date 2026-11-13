@@ -173,13 +173,13 @@ export default function MapWrapper({
 
 
         {selectedParcel && !imageModel && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-50 flex items-end justify-center p-3 sm:inset-x-auto sm:bottom-4 sm:right-4 sm:justify-end sm:p-0">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-50 flex items-end justify-center p-3 sm:inset-x-auto sm:h-full  sm:bottom-4 sm:right-4 sm:justify-end sm:p-0">
             <div
               ref={parcelDetailsRef}
               role="dialog"
               aria-modal="false"
               aria-label="Land details"
-              className="pointer-events-auto max-h-[40dvh] w-full max-w-sm overflow-y-auto rounded-lg bg-white p-4 text-gray-900 shadow-lg sm:max-h-[70dvh] sm:p-6"
+              className="pointer-events-auto max-h-[80dvh] w-full max-w-sm overflow-y-auto rounded-lg bg-white p-4 text-gray-900 shadow-lg sm:max-h-[70dvh] sm:p-6"
             >
               <button
                 type="button"
