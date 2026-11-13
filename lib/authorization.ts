@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { auth } from "../auth";
 import { redirect } from "next/navigation";
 
 type Role = "user" | "recruiter" | "admin";
@@ -12,9 +12,11 @@ export async function requireRole(
     redirect("/login");
   }
 
+  const role = (session.user as typeof session.user & { role?: Role }).role;
+
   if (
-    !session.user.role ||
-    !allowedRoles.includes(session.user.role)
+    !role ||
+    !allowedRoles.includes(role)
   ) {
     throw new Error("Forbidden");
   }

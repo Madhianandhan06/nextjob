@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import MapSidebar from "../landlens/MapSidebar";
 import MapWrapper from "../landlens/MapWrapper";
-import type { LandFeature, SavedParcel } from "@/types/landlens";
+import type { LandFeature, SavedParcel } from "../../types/landlens";
 import { toast } from "sonner";
 import { area } from "@turf/area";
 

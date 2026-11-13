@@ -2,8 +2,15 @@
 
 import { Search, MapPin, SlidersHorizontal } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, type ButtonHTMLAttributes } from "react";
+
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "outline";
+};
+
+function Button({ variant: _variant, ...props }: ButtonProps) {
+  return <button {...props} />;
+}
 
 type PriceSliderProps = {
   maxPrice: number;

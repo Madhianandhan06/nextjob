@@ -2,7 +2,7 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
-import getMongoClient from "@/lib/mongodb";
+import getMongoClient from "./lib/mongodb";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: MongoDBAdapter(getMongoClient),
@@ -23,7 +23,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
   async session({ session, user }) {
     if (session.user) {
-      session.user.role = user.role;
+      (session.user as typeof session.user & { role: string }).role =
+        (user as typeof user & { role: string }).role;
     }
 
     return session;

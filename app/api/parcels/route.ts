@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
-import connectDB from "@/lib/db";
+import connectDB from "../../../lib/db";
 import Parcel from "../../models/Parcel";
 
 // Configure Cloudinary

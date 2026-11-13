@@ -3,7 +3,7 @@
 
 import { APIProvider, AdvancedMarker, Map, Polygon } from "@vis.gl/react-google-maps";
 import MapDrawingController from "./MapDrawingController";
-import type { SavedParcel } from "@/types/landlens";
+import type { SavedParcel } from "../../types/landlens";
 import { Fragment, useEffect, useRef, useState } from "react";
 
 type MapWrapperProps = {
