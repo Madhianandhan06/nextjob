@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import connectDB from "../../../lib/db";
-import Parcel from "../../models/Parcel";
+import Parcel, { type LandType } from "../../models/Parcel";
 
 // Configure Cloudinary
 cloudinary.config({
@@ -35,6 +35,15 @@ async function uploadToCloudinary(file: File): Promise<string> {
   });
 }
 
+function isLandType(value: string): value is LandType {
+  return (
+    value === "residential" ||
+    value === "commercial" ||
+    value === "agricultural" ||
+    value === "industrial"
+  );
+}
+
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
@@ -43,10 +52,21 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
 
     const name = formData.get("name") as string | null;
-    const landtype = formData.get("landtype") as string | null;
+    const rawLandtype = formData.get("landtype");
     const rawPrice = formData.get("pricePerSquareFoot");
     const rawGeometry = formData.get("geometry") as string | null;
     const rawArea = formData.get("area") as string | null;
+
+    let landtype: LandType | undefined;
+    if (rawLandtype !== null) {
+      if (typeof rawLandtype !== "string" || !isLandType(rawLandtype)) {
+        return NextResponse.json(
+          { message: "Invalid land type" },
+          { status: 400 }
+        );
+      }
+      landtype = rawLandtype;
+    }
 
     // 2. Validate required text/JSON fields
     if (!name || !rawGeometry || !rawArea) {

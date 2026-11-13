@@ -1,7 +1,29 @@
 
 import mongoose, { Schema, models, model } from "mongoose";
 
-const parcelSchema = new Schema(
+export type LandType =
+  | "residential"
+  | "commercial"
+  | "agricultural"
+  | "industrial";
+
+type ParcelData = {
+  ownerId: string;
+  name: string;
+  pricePerSquareFoot: number;
+  geometry: {
+    type: "Polygon";
+    coordinates: number[][][];
+  };
+  area: {
+    squareMeters: number;
+    squareFeet: number;
+  };
+  landtype?: LandType;
+  images: string[];
+};
+
+const parcelSchema = new Schema<ParcelData>(
   {
     ownerId: {
       type: String,
@@ -72,6 +94,7 @@ const parcelSchema = new Schema(
 parcelSchema.index({ geometry: "2dsphere" });
 
 const Parcel =
-  models.Parcel || model("Parcel", parcelSchema);
+  (models.Parcel as mongoose.Model<ParcelData> | undefined) ||
+  model<ParcelData>("Parcel", parcelSchema);
 
 export default Parcel;
