@@ -8,7 +8,7 @@ export type LandType =
   | "industrial";
 
 type ParcelData = {
-  ownerId: string;
+  ownerId: mongoose.Types.ObjectId;
   name: string;
   pricePerSquareFoot: number;
   geometry: {
@@ -26,9 +26,11 @@ type ParcelData = {
 const parcelSchema = new Schema<ParcelData>(
   {
     ownerId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
       index: true,
+      ref: "User",
+
     },
 
     name: {
@@ -71,11 +73,12 @@ const parcelSchema = new Schema<ParcelData>(
         required: true,
       },
     },
+
     landtype: {
       type: String,
       enum: ["residential", "commercial", "agricultural", "industrial"],
     },
-    // Add this field inside your ParcelSchema definition
+    
     images: {
       type: [String],
       required: true,

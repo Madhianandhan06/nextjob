@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import MapSidebar from "../landlens/MapSidebar";
 import MapWrapper from "../landlens/MapWrapper";
 import type { LandFeature, SavedParcel } from "../../types/landlens";
@@ -9,6 +10,7 @@ import { toast } from "sonner";
 import { area } from "@turf/area";
 
 export default function LandLensPage() {
+  const router = useRouter();
   const [maxPrice, setMaxPrice] = useState(5000);
 
   // Controls whether the owner can draw a boundary
@@ -47,11 +49,15 @@ export default function LandLensPage() {
 
   const loadParcels = useCallback(async () => {
     const response = await fetch("/api/parcels");
+    if (response.status === 401) {
+      router.replace("/login");
+      return;
+    }
     if (!response.ok) throw new Error("Could not load parcels");
 
     const data = (await response.json()) as { parcels: SavedParcel[] };
     setParcels(data.parcels);
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     loadParcels().catch((error) =>
@@ -138,6 +144,11 @@ export default function LandLensPage() {
         // Note: Do NOT set 'Content-Type': 'application/json' here
         body: formData,
       });
+
+      if (response.status === 401) {
+        router.replace("/login");
+        return;
+      }
 
       const result = await response.json();
       if (!response.ok) {

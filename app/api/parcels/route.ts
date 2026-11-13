@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import connectDB from "../../../lib/db";
 import Parcel, { type LandType } from "../../models/Parcel";
+import { auth } from "@/auth";
 
 // Configure Cloudinary
 cloudinary.config({
@@ -46,12 +47,16 @@ function isLandType(value: string): value is LandType {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     await connectDB();
 
     // 1. Parse FormData instead of JSON
     const formData = await request.formData();
 
-    const name = formData.get("name") as string | null;
+    const name = session.user.name || "Unnamed Parcel";
     const rawLandtype = formData.get("landtype");
     const rawPrice = formData.get("pricePerSquareFoot");
     const rawGeometry = formData.get("geometry") as string | null;
@@ -116,7 +121,7 @@ export async function POST(request: NextRequest) {
     // 5. Save parcel with Cloudinary URLs in MongoDB
     const parcel = await Parcel.create({
       name,
-      ownerId: "temporary-user",
+      ownerId: session.user.id,
       pricePerSquareFoot,
       geometry,
       area,
@@ -147,9 +152,14 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   try {
     await connectDB();
+    
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
 
     // Included 'images' and 'landtype' in .select() so your map/frontend receives them
-    const parcels = await Parcel.find({ ownerId: "temporary-user" })
+    const parcels = await Parcel.find({ ownerId: session.user.id })
       .select("_id name geometry area pricePerSquareFoot landtype images")
       .lean();
 
