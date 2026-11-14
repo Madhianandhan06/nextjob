@@ -115,7 +115,11 @@ export default function MapWrapper({
                     }}
                   />
                   {parcel.pricePerSquareFoot != null && markerPosition && (
-                    <AdvancedMarker position={markerPosition}>
+                    <AdvancedMarker position={markerPosition}                       
+                      onClick={() => {
+                        setSelectedParcel(parcel);
+                        console.log("Parcel clicked:", parcel);
+                      }}>
                       <div className="rounded-lg bg-emerald-500 px-3 py-2 text-xs font-bold text-white shadow-lg">
                         ₹{parcel.pricePerSquareFoot}/sqft
                       </div>
